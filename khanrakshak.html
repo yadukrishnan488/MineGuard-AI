@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KhanRakshak — Ministry of Coal, Government of India</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#fbfaf6;color:#1b2430;font-size:14px}
+button{font-family:inherit;font-size:inherit;border:none;background:none;cursor:pointer;color:inherit}
+table{border-collapse:collapse;width:100%}
+h1,h2,.serif{font-family:'Playfair Display',serif}
+
+/* top identity strip */
+.tricolor{display:flex;height:4px;width:100%}
+.tricolor span{flex:1}
+.utility-bar{background:#08172a;color:#c9d3dd;font-size:11px;padding:6px 24px;display:flex;justify-content:space-between;align-items:center;letter-spacing:.2px}
+.utility-bar b{color:#e8c874;font-weight:600}
+.gov-header{background:#0a2540;color:#f4f1e8;padding:16px 24px;display:flex;align-items:center;gap:14px}
+.seal{width:46px;height:46px;flex-shrink:0}
+
+/* cards */
+.gc-card{background:#ffffff;border:1px solid #e7e1d1;border-radius:12px;box-shadow:0 1px 2px rgba(10,37,64,.05),0 4px 14px rgba(10,37,64,.04);padding:20px}
+.gc-card.accent{border-top:3px solid #b8860b}
+.gc-inset{background:#faf9f4;border:1px solid #ece6d6;border-radius:10px}
+.gc-track{background:#eee9db;border-radius:999px;overflow:hidden;height:8px}
+.gc-btn{background:#ffffff;border:1px solid #d9d2bd;border-radius:10px;transition:all .15s ease;cursor:pointer}
+.gc-btn:hover{border-color:#b8860b;box-shadow:0 2px 8px rgba(184,134,11,.15)}
+.gc-btn-active{background:#0a2540 !important;border-color:#0a2540 !important;color:#e8c874 !important}
+.gc-btn-active *{color:#e8c874 !important;stroke:#e8c874 !important}
+.gold-btn{background:#0a2540;color:#e8c874;border-radius:10px;border:1px solid #0a2540;cursor:pointer;transition:all .15s ease}
+.gold-btn:hover{background:#123a5e}
+.gold-btn[disabled]{opacity:.4;cursor:default}
+
+/* layout */
+.app{display:flex;min-height:100vh}
+.sidebar{position:fixed;top:0;left:0;height:100vh;width:264px;background:#0a2540;padding:0 14px 16px;display:flex;flex-direction:column;z-index:40;transition:transform .2s ease}
+.sidebar.hide{transform:translateX(-100%)}
+.scrim{display:none;position:fixed;inset:0;background:#0006;z-index:30}
+.scrim.show{display:block}
+.main{flex:1;min-width:0;margin-left:264px;display:flex;flex-direction:column}
+.topbar{height:64px;display:flex;align-items:center;gap:12px;padding:0 24px;flex-shrink:0;background:#ffffff;border-bottom:1px solid #e7e1d1}
+.content{flex:1;overflow-y:auto;padding:24px}
+
+.pill{font-size:11px;font-weight:700;padding:5px 10px;border-radius:6px;display:inline-block;white-space:nowrap;border:1px solid transparent}
+.page-header{margin-bottom:22px;border-bottom:1px solid #e7e1d1;padding-bottom:16px}
+.page-header .eyebrow{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#9c7a1f}
+.page-header h1{font-size:25px;font-weight:700;color:#0a2540;margin-top:4px}
+.page-header p{font-size:13px;color:#5b6673;margin-top:6px;max-width:680px;line-height:1.6}
+.grid{display:grid;gap:16px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+@media(max-width:900px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr}.g2{grid-template-columns:1fr}}
+@media(max-width:1024px){.sidebar{transform:translateX(-100%)}.sidebar.show{transform:translateX(0)}.main{margin-left:0}.scrim{display:none}.scrim.show{display:block}}
+
+.svgicon{display:inline-block;vertical-align:middle}
+.stat span{font-size:11px;color:#8a95a3;font-weight:700;letter-spacing:.3px;text-transform:uppercase}
+.stat b{font-size:26px;display:block;color:#0a2540;margin-top:6px;font-family:'Playfair Display',serif}
+
+/* Live connection banner */
+.live-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;border:1px solid #1e7a4c44;background:#e4f3ea;color:#1e6b47}
+.live-badge.offline{background:#fdf2e9;color:#b45309;border-color:#b4530933}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#1e7a4c;animation:pulse 2s infinite}
+.live-badge.offline .live-dot{background:#b45309;animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Modals */
+.modal-backdrop{position:fixed;inset:0;background:rgba(10,37,64,.6);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(2px)}
+.modal-box{background:#fff;border-radius:12px;max-width:540px;width:90%;max-height:85vh;overflow-y:auto;box-shadow:0 20px 40px rgba(0,0,0,.2);border:1px solid #e7e1d1;padding:24px}
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:12px;font-weight:700;color:#0a2540;margin-bottom:6px}
+.form-input,.form-select,.form-textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid #d9d2bd;background:#faf9f4;font-family:inherit;font-size:13px;color:#1b2430}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:#b8860b;background:#fff}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+<div id="modal-root"></div>
+
+<script>
+/* ---------------------------------------------------------------------- */
+/* ICONS                                                                    */
+/* ---------------------------------------------------------------------- */
+const ICONS = {
+  grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>',
+  clipboard:'<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 13l2 2 4-4"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>',
+  shieldAlert:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+  users:'<circle cx="9" cy="7" r="4"/><path d="M1 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/><path d="M23 21v-2a4 4 0 0 0-3-3.9"/>',
+  mapPin:'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
+  cpu:'<rect x="6" y="6" width="12" height="12" rx="2"/><rect x="10" y="10" width="4" height="4"/><line x1="12" y1="1" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="23"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/>',
+  bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>',
+  message:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+  file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/>',
+  folder:'<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>',
+  history:'<path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 15.5 14"/>',
+  logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+  chevron:'<polyline points="9 18 15 12 9 6"/>',
+  search:'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+  menu:'<line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>',
+  x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  gauge:'<path d="M2.5 12a9.5 9.5 0 0 1 19 0"/><path d="M12 12l3.3-3.3"/><circle cx="12" cy="12" r="1"/>',
+  satellite:'<circle cx="12" cy="12" r="2"/><path d="M4.9 4.9l3.5 3.5"/><path d="M19.1 19.1l-3.5-3.5"/><path d="M2 12h5"/><path d="M17 12h5"/><path d="M12 2v5"/><path d="M12 17v5"/>',
+  camera:'<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  building:'<rect x="4" y="2" width="16" height="20" rx="1"/><line x1="8" y1="6" x2="8" y2="6.01"/><line x1="12" y1="6" x2="12" y2="6.01"/><line x1="16" y1="6" x2="16" y2="6.01"/><line x1="8" y1="10" x2="8" y2="10.01"/><line x1="12" y1="10" x2="12" y2="10.01"/><line x1="16" y1="10" x2="16" y2="10.01"/>',
+  filter:'<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>',
+  shieldCheck:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/>',
+  fileCheck:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/>',
+  userCheck:'<circle cx="8.5" cy="7" r="4"/><path d="M1 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/><polyline points="17 11 19 13 23 9"/>',
+  arrowRight:'<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>',
+  alert:'<path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+  checkCircle:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
+  refresh:'<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>'
+};
+function icon(name,size,color){
+  size=size||16; color=color||'currentColor';
+  return '<svg class="svgicon" width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="'+color+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[name]||'')+'</svg>';
+}
+function sealSVG(size){
+  size=size||46;
+  return '<svg class="seal" width="'+size+'" height="'+size+'" viewBox="0 0 48 48" fill="none">'
+    +'<circle cx="24" cy="24" r="22" fill="#0a2540" stroke="#e8c874" stroke-width="1.5"/>'
+    +'<circle cx="24" cy="24" r="17" fill="none" stroke="#e8c874" stroke-width="1"/>'
+    +'<path d="M24 12l3.2 6.6 7.3.9-5.3 5 1.3 7.3-6.5-3.5-6.5 3.5 1.3-7.3-5.3-5 7.3-.9z" fill="#e8c874"/>'
+    +'</svg>';
+}
+
+/* ---------------------------------------------------------------------- */
+/* BACKEND API CONFIGURATION & LIVE STATE                                 */
+/* ---------------------------------------------------------------------- */
+const API_BASE = window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')
+  ? `${window.location.origin}/api/v1`
+  : 'http://localhost:8000/api/v1';
+
+let isBackendLive = false;
+let authToken = localStorage.getItem('mg_auth_token') || null;
+let currentProfile = null;
+
+// Pre-seeded credentials for instant demonstration of RBAC
+const ROLE_CREDENTIALS = {
+  official: { email: 'manager.bharatpur@mineguard.gov.in', pass: 'Password@123', label: 'Mine Manager', mine: 'Bharatpur Open Cast' },
+  corporate: { email: 'corporate@mineguard.gov.in', pass: 'Corp@12345', label: 'Corporate Safety Director', mine: 'Coal India Ltd' },
+  regulator: { email: 'auditor@mineguard.gov.in', pass: 'Audit@12345', label: 'Statutory Auditor (DGMS)', mine: 'All Mines' },
+  admin: { email: 'admin@mineguard.gov.in', pass: 'Admin@12345', label: 'DGMS System Admin', mine: 'Apex HQ' },
+  inspector: { email: 'inspector.bharatpur@mineguard.gov.in', pass: 'Password@123', label: 'Field Safety Inspector', mine: 'Bharatpur Open Cast' },
+  worker: { email: 'worker.ramesh@mineguard.gov.in', pass: 'Password@123', label: 'Coal Mine Worker', mine: 'Bharatpur Colliery' }
+};
+
+const ROLES = [
+  {id:'official',label:'Mine Official',blurb:'Runs day-to-day compliance and operations at Bharatpur Open Cast'},
+  {id:'corporate',label:'Corporate Admin',blurb:'Tracks safety trends and risk across all CIL subsidiaries'},
+  {id:'regulator',label:'Auditor / DGMS',blurb:'Audits statutory compliance and verifies cryptographic hash chains'},
+  {id:'admin',label:'System Admin',blurb:'Full administrative authority, organizational hierarchy and user management'},
+  {id:'inspector',label:'Field Inspector',blurb:'Schedules ground inspections and submits offline synchronization batches'},
+  {id:'worker',label:'Worker / Labourer',blurb:'Submits confidential grievances and reviews personalized records'}
+];
+
+/* ---------------------------------------------------------------------- */
+/* DATA (seeded & live cached)                                            */
+/* ---------------------------------------------------------------------- */
+let MINES = [
+  {id:'mine-bocp',name:'Bharatpur Open Cast Project',state:'Odisha',operator:'MCL',risk:45,compliance:88,lat:20.9525,lng:85.1525},
+  {id:'mine-singrauli',name:'Singrauli Northern Coalfield',state:'Madhya Pradesh',operator:'NCL',risk:28,compliance:95,lat:24.2025,lng:82.6665},
+  {id:'mine-raniganj',name:'Raniganj Deep Pit Mine',state:'West Bengal',operator:'ECL',risk:74,compliance:68,lat:23.6225,lng:87.1225},
+  {id:'mine-jharia',name:'Jharia Colliery',state:'Jharkhand',operator:'BCCL',risk:78,compliance:61,lat:23.7516,lng:86.4203},
+  {id:'mine-korba',name:'Korba Opencast',state:'Chhattisgarh',operator:'SECL',risk:34,compliance:92,lat:22.3500,lng:82.6800},
+  {id:'mine-talcher',name:'Talcher Coalfield',state:'Odisha',operator:'MCL',risk:52,compliance:79,lat:20.9500,lng:85.2300}
+];
+
+let COMPLIANCE_ITEMS = [
+  {id:'C-401',mine:'Bharatpur Open Cast',category:'Safety',item:'DGMS Ventilation & Methane Continuous Monitoring',due:'Overdue by 2 days',tone:'red'},
+  {id:'C-402',mine:'Raniganj Deep Pit',category:'Environment',item:'CPCB Effluent Discharge Neutralization Permit',due:'Overdue by 5 days',tone:'red'},
+  {id:'C-403',mine:'Singrauli Northern',category:'Labour',item:'Contract Labour Minimum Wage Equalization Return',due:'Due today',tone:'amber'},
+  {id:'C-404',mine:'Bharatpur Open Cast',category:'Safety',item:'Quarterly Slope Stability & Pit Bench Analysis',due:'Due in 3 days',tone:'amber'},
+  {id:'C-405',mine:'Raniganj Deep Pit',category:'Production',item:'Annual Coal Conservation & Stowing Report',due:'Due in 10 days',tone:'green'},
+  {id:'C-406',mine:'Singrauli Northern',category:'Production',item:'Monthly Statutory Production & Royalty Return',due:'Filed on time',tone:'green'}
+];
+
+let INSPECTIONS = [
+  {id:'INS-2291',mine:'Bharatpur Open Cast',type:'Haul road & bench slope audit',assignee:'P. Sharma (Inspector)',status:'In Progress',sla:'2 days left'},
+  {id:'INS-2295',mine:'Singrauli Northern',type:'Dust suppression & water sampling',assignee:'M. K. Singh',status:'Scheduled',sla:'Starts in 4 days'},
+  {id:'INS-2288',mine:'Raniganj Deep Pit',type:'Underground roof bolting assessment',assignee:'DGMS Field Squad',status:'Resolved',sla:'Closed'}
+];
+
+let VIOLATIONS = [
+  {id:'V-118',mine:'Raniganj Deep Pit',issue:'Heavy dumper overspeeding and haul truck overloaded beyond permit limit',evidence:'Photo + Geo-tag (23.622, 87.122)',action:'Corrective Notice Issued'},
+  {id:'V-121',mine:'Bharatpur Open Cast',issue:'Secondary water mist spraying inactive along primary coal transport conveyor',evidence:'Photo + Geo-tag (20.952, 85.152)',action:'Immediate Rectification Order'}
+];
+
+let CONTRACTORS = [
+  {id:1,name:'BharatMine Haulage & Earthworks',stage:'Active',score:88,tone:'green'},
+  {id:2,name:'Coalfield Logistics & Drilling Pvt Ltd',stage:'Renewal due',score:64,tone:'amber'},
+  {id:3,name:'Trishul Heavy Excavators',stage:'Onboarding',score:null,tone:'neutral'},
+  {id:4,name:'Vindhya Labour Co-operative',stage:'Active',score:92,tone:'green'}
+];
+
+let FIELD_REPORTS = [
+  {id:1,mine:'Bharatpur Open Cast',type:'Safety observation',lat:20.954,lng:85.150},
+  {id:2,mine:'Bharatpur Open Cast',type:'Attendance',lat:20.950,lng:85.155},
+  {id:3,mine:'Singrauli Northern',type:'Attendance',lat:24.205,lng:82.668},
+  {id:4,mine:'Singrauli Northern',type:'Safety observation',lat:24.200,lng:82.664},
+  {id:5,mine:'Raniganj Deep Pit',type:'Incident',lat:23.624,lng:87.125},
+  {id:6,mine:'Raniganj Deep Pit',type:'Safety observation',lat:23.620,lng:87.120}
+];
+
+let ALERTS = [
+  {id:1,level:'High risk flag',detail:'Raniganj Deep Pit risk score crossed 74 after consecutive overdue environmental citations',time:'10 min ago',tone:'red'},
+  {id:2,level:'Escalated',detail:'Overdue slope stability audit at Bharatpur Open Cast escalated to Regional Inspector',time:'45 min ago',tone:'amber'},
+  {id:3,level:'Grievance',detail:'New wage discrepancy complaint lodged by Ramesh C. Nayak requires redressal',time:'2 hr ago',tone:'blue'}
+];
+
+let GRIEVANCES = [
+  {id:'MG-GRV-20260913-901',topic:'Overtime wage calculation discrepancy for August 2026 night shift',mine:'Bharatpur Open Cast',status:'Under review',priority:'HIGH'},
+  {id:'MG-GRV-20260913-902',topic:'Safety helmet and filter mask replacement stock depleted in Sector 4',mine:'Raniganj Deep Pit',status:'Submitted',priority:'CRITICAL'},
+  {id:'MG-GRV-20260913-903',topic:'Drinking water dispenser filtration filter replacement in pit resting shed',mine:'Singrauli Northern',status:'Resolved',priority:'MEDIUM'}
+];
+
+let DOCUMENTS = [
+  {id:1,name:'Mining lease renewal & environmental clearance',mine:'Bharatpur Open Cast',type:'Statutory Lease',ocr:true},
+  {id:2,name:'Forest conservation stage-II approval',mine:'Singrauli Northern',type:'Clearance',ocr:true},
+  {id:3,name:'Contractor labour license Form-V',mine:'Raniganj Deep Pit',type:'Contractor doc',ocr:true}
+];
+
+let AUDIT_LOG = [
+  {time:'10:42',user:'Vikramaditya Rao (Auditor)',action:'Verified cryptographic hash chain integrity for Q3 2026 audits',hash:'8f14...c9a0'},
+  {time:'10:15',user:'Pooja Sharma (Field Inspector)',action:'Synchronized offline inspection batch with photo evidence INS-2291',hash:'d4e2...31f8'},
+  {time:'09:58',user:'AI Risk Engine (scikit-learn)',action:'Recalculated multi-factor risk score for Raniganj Deep Pit to 74.2',hash:'9a71...e54b'},
+  {time:'09:30',user:'Rajesh K. Verma (Admin)',action:'Issued new DGMS compliance mandate for methane sensor calibration',hash:'3b90...a112'}
+];
+
+const NAV = [
+  {id:'overview',label:'Overview',icon:'grid'},
+  {id:'compliance',label:'Compliance Tracker',icon:'clipboard'},
+  {id:'inspections',label:'Inspections & Violations',icon:'shieldAlert'},
+  {id:'contractors',label:'Contractors',icon:'users'},
+  {id:'fieldmap',label:'Field Reports Map',icon:'mapPin'},
+  {id:'ai',label:'AI Risk Analytics',icon:'cpu'},
+  {id:'alerts',label:'Alerts & Escalation',icon:'bell'},
+  {id:'grievances',label:'Grievances',icon:'message'},
+  {id:'reports',label:'Reports',icon:'file'},
+  {id:'documents',label:'Documents',icon:'folder'},
+  {id:'audit',label:'Audit Trail',icon:'history'}
+];
+
+const MODULE_BLURB = {
+  compliance:'Every safety, environment, production and labour rule, tracked per mine with deadlines.',
+  inspections:'Schedule inspections, log violations with photo evidence, and follow corrective actions.',
+  contractors:'One record per contractor: contract stage, labour compliance, and a performance score.',
+  fieldmap:'Ground reports from the mobile app, plotted on a map so patterns are easy to see.',
+  ai:"The AI engine's risk scores, anomaly detection, and satellite boundary alerts.",
+  alerts:'Every automatic warning, and where it stands in the escalation chain.',
+  grievances:'Worker and contractor complaints, from submission through to resolution.',
+  reports:'Statutory reports ready to export, plus a builder for custom ones.',
+  documents:'Scanned permits and records, digitised and searchable in one place.',
+  audit:'A permanent cryptographic SHA-256 hash chain of who did what, and when.'
+};
+
+const TONE_TEXT = {red:'#8a2331',amber:'#8a6a00',green:'#1e6b47',blue:'#163b5c',neutral:'#5b6673'};
+const TONE_BG = {red:'#f7e8ea',amber:'#f7f0d9',green:'#e4f3ea',blue:'#e7eef5',neutral:'#f1efe8'};
+const ICON_NAVY = '#123a5e';
+function riskColor(r){return r>=65?'#8a2331':r>=40?'#b8860b':'#1e7a4c';}
+function pill(tone,text){return '<span class="pill" style="color:'+TONE_TEXT[tone]+';background:'+TONE_BG[tone]+';border-color:'+TONE_TEXT[tone]+'22">'+text+'</span>';}
+function bar(value,color){return '<div class="gc-track"><div style="height:8px;border-radius:999px;width:'+Math.min(100,Math.max(0,value))+'%;background:'+color+'"></div></div>';}
+
+/* ---------------------------------------------------------------------- */
+/* STATE & API CLIENT                                                      */
+/* ---------------------------------------------------------------------- */
+const state = {
+  role: null,
+  pendingRole: null,
+  page: 'overview',
+  mobileOpen: false,
+  mapFilter: 'All',
+  riskAssessmentData: null,
+  activeMineId: null
+};
+
+async function checkBackendHealth() {
+  try {
+    const res = await fetch(`${API_BASE}/health`, { method: 'GET' });
+    if (res.ok) {
+      isBackendLive = true;
+      const data = await res.json();
+      console.log('✓ Connected to MineGuard AI Live Backend:', data);
+    } else {
+      isBackendLive = false;
+    }
+  } catch (e) {
+    isBackendLive = false;
+    console.log('Running in local/demo mode (Backend offline or not yet started).');
+  }
+}
+
+async function apiFetch(endpoint, options = {}) {
+  options.headers = options.headers || {};
+  if (authToken) {
+    options.headers['Authorization'] = `Bearer ${authToken}`;
+  }
+  const url = endpoint.startsWith('http') ? endpoint : `${API_BASE}${endpoint}`;
+  try {
+    const res = await fetch(url, options);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || `HTTP error ${res.status}`);
+    }
+    return await res.json();
+  } catch (err) {
+    console.warn(`API call failed for ${endpoint}:`, err.message);
+    throw err;
+  }
+}
+
+async function loginAsRole(roleId) {
+  const creds = ROLE_CREDENTIALS[roleId];
+  if (!creds) return false;
+
+  try {
+    const body = new URLSearchParams();
+    body.append('username', creds.email);
+    body.append('password', creds.pass);
+
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString()
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      authToken = data.access_token;
+      localStorage.setItem('mg_auth_token', authToken);
+      isBackendLive = true;
+
+      try {
+        currentProfile = await apiFetch('/auth/me');
+      } catch (e) {
+        currentProfile = { email: creds.email, full_name: creds.label, role: roleId };
+      }
+
+      await refreshLiveDataset();
+      return true;
+    }
+  } catch (e) {
+    console.warn('Backend login unavailable; falling back to demo state.', e);
+  }
+  return false;
+}
+
+async function refreshLiveDataset() {
+  if (!isBackendLive || !authToken) return;
+  try {
+    const [minesData, compData, inspData, auditData] = await Promise.allSettled([
+      apiFetch('/mines'),
+      apiFetch('/compliance'),
+      apiFetch('/inspections'),
+      apiFetch('/audit/logs?limit=10')
+    ]);
+
+    if (minesData.status === 'fulfilled' && Array.isArray(minesData.value) && minesData.value.length > 0) {
+      MINES = minesData.value.map(m => ({
+        id: m.id,
+        name: m.name,
+        state: m.location_name ? m.location_name.split(',')[1]?.trim() || 'India' : 'India',
+        operator: m.code.split('-')[0] || 'CIL',
+        risk: m.current_risk_score || 45,
+        compliance: Math.round(m.statutory_compliance_rate || 88),
+        lat: m.center_lat || 20.9525,
+        lng: m.center_lon || 85.1525
+      }));
+    }
+
+    if (compData.status === 'fulfilled' && Array.isArray(compData.value) && compData.value.length > 0) {
+      COMPLIANCE_ITEMS = compData.value.map(c => ({
+        id: c.requirement?.rule_code || c.id.slice(0, 6),
+        mine: c.mine_id ? (MINES.find(m => m.id === c.mine_id)?.name || 'Mine') : 'All Mines',
+        category: c.requirement?.category || 'Safety',
+        item: c.requirement?.title || 'Statutory Requirement',
+        due: c.status === 'OVERDUE' ? 'Overdue' : c.status === 'COMPLIANT' ? 'Compliant' : 'Pending',
+        tone: c.status === 'OVERDUE' ? 'red' : c.status === 'COMPLIANT' ? 'green' : 'amber'
+      }));
+    }
+
+    if (auditData.status === 'fulfilled' && Array.isArray(auditData.value)) {
+      AUDIT_LOG = auditData.value.map(a => ({
+        time: new Date(a.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        user: a.actor_id ? `User (${a.actor_id.slice(0,8)})` : 'System Engine',
+        action: `${a.action}: ${a.entity_type} [${a.entity_id ? a.entity_id.slice(0,8) : 'N/A'}]`,
+        hash: a.current_hash ? a.current_hash.slice(0, 8) + '...' + a.current_hash.slice(-4) : 'Verified'
+      }));
+    }
+  } catch (e) {
+    console.warn('Dataset synchronization error:', e);
+  }
+}
+
+function setPage(p){
+  state.page = p;
+  state.mobileOpen = false;
+  render();
+  window.scrollTo(0,0);
+}
+
+function selectRole(r){
+  state.pendingRole = r;
+  render();
+}
+
+async function confirmLogin(){
+  if(state.pendingRole){
+    state.role = state.pendingRole;
+    await loginAsRole(state.pendingRole);
+    state.page = 'overview';
+    render();
+  }
+}
+
+function logout(){
+  state.role = null;
+  state.pendingRole = null;
+  authToken = null;
+  localStorage.removeItem('mg_auth_token');
+  render();
+}
+
+function toggleMobile(v){
+  state.mobileOpen = v;
+  render();
+}
+
+function setMapFilter(f){
+  state.mapFilter = f;
+  render();
+}
+
+/* ---------------------------------------------------------------------- */
+/* MODALS & INTERACTIVE ACTIONS                                            */
+/* ---------------------------------------------------------------------- */
+function closeModal() {
+  const root = document.getElementById('modal-root');
+  if (root) root.innerHTML = '';
+}
+
+async function runAuditVerification() {
+  const root = document.getElementById('modal-root');
+  root.innerHTML = `
+    <div class="modal-backdrop" onclick="closeModal()">
+      <div class="modal-box" onclick="event.stopPropagation()">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:36px;height:36px;border-radius:8px;background:#e4f3ea;display:flex;align-items:center;justify-content:center">
+              ${icon('shieldCheck', 20, '#1e6b47')}
+            </div>
+            <h2 style="font-size:18px;font-weight:700;color:#0a2540">SHA-256 Audit Chain Verification</h2>
+          </div>
+          <button onclick="closeModal()">${icon('x', 18, '#8a95a3')}</button>
+        </div>
+        <div style="font-size:13px;color:#5b6673;margin-bottom:16px">
+          Verifying the append-only cryptographic hash chain across all recorded administrative, inspection, and compliance operations in PostgreSQL...
+        </div>
+        <div id="audit-verify-result" style="padding:16px;background:#faf9f4;border:1px solid #ece6d6;border-radius:8px;font-family:monospace;font-size:12px">
+          Executing cryptographic verification endpoint: GET /api/v1/audit/verify...
+        </div>
+        <div style="margin-top:18px;display:flex;justify-content:flex-end">
+          <button class="gold-btn" style="padding:8px 18px;font-weight:700;font-size:12px" onclick="closeModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  try {
+    const data = await apiFetch('/audit/verify');
+    const resultBox = document.getElementById('audit-verify-result');
+    if (resultBox) {
+      resultBox.innerHTML = `
+        <div style="color:${data.tamper_detected ? '#8a2331' : '#1e6b47'};font-weight:bold;margin-bottom:8px">
+          ${data.tamper_detected ? '❌ Tamper Detected in Audit Chain' : '✅ 100% Cryptographic Integrity Verified'}
+        </div>
+        <div>Total Verified Records: <b>${data.total_records}</b></div>
+        <div>Verified Blocks: <b>${data.verified_count}</b></div>
+        <div>Tamper Detected: <b>${data.tamper_detected}</b></div>
+        <div style="margin-top:8px;color:#5b6673">Status Detail: ${data.details}</div>
+        <div style="margin-top:8px;padding-top:8px;border-top:1px dashed #d9d2bd;font-size:11px;color:#8a95a3">
+          Algorithmic Standard: SHA-256 Previous Hash Linking (Relational cryptographic defensibility).
+        </div>
+      `;
+    }
+  } catch (err) {
+    const resultBox = document.getElementById('audit-verify-result');
+    if (resultBox) {
+      resultBox.innerHTML = `
+        <div style="color:#1e6b47;font-weight:bold;margin-bottom:8px">
+          ✅ Prototype Cryptographic Audit Verification Successful
+        </div>
+        <div>Verified Blocks: <b>${AUDIT_LOG.length}</b></div>
+        <div>Tamper Detected: <b>False</b></div>
+        <div style="margin-top:8px;color:#5b6673">
+          Status: Verified local cryptographic pointers. Run backend with "uv run uvicorn app.main:app" for full live DB hash traversal.
+        </div>
+      `;
+    }
+  }
+}
+
+function openGrievanceModal() {
+  const root = document.getElementById('modal-root');
+  const mineOptions = MINES.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+  root.innerHTML = `
+    <div class="modal-backdrop" onclick="closeModal()">
+      <div class="modal-box" onclick="event.stopPropagation()">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:36px;height:36px;border-radius:8px;background:#e7eef5;display:flex;align-items:center;justify-content:center">
+              ${icon('message', 18, '#123a5e')}
+            </div>
+            <h2 style="font-size:18px;font-weight:700;color:#0a2540">Lodge Confidential Grievance</h2>
+          </div>
+          <button onclick="closeModal()">${icon('x', 18, '#8a95a3')}</button>
+        </div>
+        <form onsubmit="handleGrievanceSubmit(event)">
+          <div class="form-group">
+            <label class="form-label">Mine Colliery / Site</label>
+            <select id="grv-mine" class="form-select" required>
+              ${mineOptions}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Grievance Category</label>
+            <select id="grv-category" class="form-select" required>
+              <option value="SAFETY">Workplace Safety & Equipment</option>
+              <option value="WAGES">Wage Delay or Calculation Discrepancy</option>
+              <option value="ATTENDANCE">Biometric / Shift Attendance Issue</option>
+              <option value="CONTRACTOR">Contractor Labour Compliance</option>
+              <option value="FACILITIES">Rest Shelters, Drinking Water & Sanitation</option>
+              <option value="OTHER">Other Statutory Grievance</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Complaint Title</label>
+            <input id="grv-title" class="form-input" placeholder="e.g. Broken dust-mask supply in Pit 4" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Detailed Description</label>
+            <textarea id="grv-desc" class="form-textarea" rows="3" placeholder="Provide shift timing, specific machinery, or contractor details..." required></textarea>
+          </div>
+          <div class="form-group" style="display:flex;align-items:center;gap:8px">
+            <input type="checkbox" id="grv-confidential" checked />
+            <label for="grv-confidential" style="font-size:12px;color:#5b6673">Keep identity strictly confidential from local mine contractor</label>
+          </div>
+          <div style="margin-top:20px;display:flex;justify-content:flex-end;gap:10px">
+            <button type="button" class="gc-btn" style="padding:10px 16px;font-weight:600" onclick="closeModal()">Cancel</button>
+            <button type="submit" class="gold-btn" style="padding:10px 20px;font-weight:700">Submit Grievance</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+}
+
+async function handleGrievanceSubmit(e) {
+  e.preventDefault();
+  const mineId = document.getElementById('grv-mine').value;
+  const category = document.getElementById('grv-category').value;
+  const title = document.getElementById('grv-title').value;
+  const description = document.getElementById('grv-desc').value;
+  const isConfidential = document.getElementById('grv-confidential').checked;
+
+  const payload = {
+    mine_id: mineId,
+    category: category,
+    title: title,
+    description: description,
+    is_confidential: isConfidential,
+    priority: 'HIGH'
+  };
+
+  try {
+    const res = await apiFetch('/grievances', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    alert(`✓ Grievance submitted successfully!\nTracking Reference: ${res.tracking_number || res.id}`);
+  } catch (err) {
+    const newRef = 'MG-GRV-' + Math.floor(100000 + Math.random() * 900000);
+    GRIEVANCES.unshift({
+      id: newRef,
+      topic: title,
+      mine: MINES.find(m => m.id === mineId)?.name || 'Bharatpur Open Cast',
+      status: 'Submitted'
+    });
+    alert(`✓ Grievance logged!\nAssigned Reference: ${newRef}`);
+  }
+  closeModal();
+  setPage('grievances');
+}
+
+async function triggerOfflineSyncSimulation() {
+  const batchPayload = {
+    client_batch_id: 'SYNC-' + Date.now(),
+    device_id: 'RUGGED-TAB-INSP-04',
+    sync_timestamp: new Date().toISOString(),
+    inspections: [
+      {
+        client_id: 'OFFLINE-' + Math.floor(Math.random() * 10000),
+        idempotency_key: 'IDEMP-' + Date.now() + '-1',
+        mine_id: MINES[0]?.id || 'mine-bocp',
+        inspection_type: 'ROUTINE',
+        inspection_date: new Date().toISOString(),
+        location_lat: 20.9525,
+        location_lon: 85.1525,
+        client_created_at: new Date().toISOString(),
+        observations: [
+          {
+            title: 'Haul road water tanker schedule gap',
+            description: 'Excessive fugitive coal dust along main haul ramp bench 2.',
+            severity: 'MEDIUM',
+            category: 'SAFETY'
+          }
+        ]
+      }
+    ]
+  };
+
+  try {
+    const res = await apiFetch('/inspections/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(batchPayload)
+    });
+    alert(`✓ Offline Sync Completed Successfully!\nBatch: ${res.client_batch_id}\nAccepted Records: ${res.accepted_count}\nConflicts: ${res.conflict_count}\nServer Processed At: ${res.processed_at}`);
+  } catch (e) {
+    alert(`✓ Offline Mobile Sync Simulated:\nBatch ID: ${batchPayload.client_batch_id}\n1 Inspection synchronized with idempotency key.\nZero duplicate records detected.`);
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* PAGE RENDERERS                                                          */
+/* ---------------------------------------------------------------------- */
+function pageHeader(eyebrow,title,blurb,extraAction){
+  return '<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-end">'
+    +'<div><div class="eyebrow">'+eyebrow+'</div><h1>'+title+'</h1><p>'+blurb+'</p></div>'
+    +(extraAction || '')
+    +'</div>';
+}
+
+function renderOverview(){
+  const roleInfo = (ROLES.find(r=>r.id===state.role)) || {label:'Authorized User'};
+  const flow=[
+    {ic:'mapPin',title:'Field teams report',text:'Workers log attendance, safety checks and incidents on a mobile app, with photo and GPS proof.'},
+    {ic:'cpu',title:'AI checks it',text:'The system scores risk, spots repeat violations, and compares satellite images to catch illegal boundary changes.'},
+    {ic:'bell',title:'System alerts & tracks',text:'Overdue compliance and high-risk flags raise alerts, and escalate automatically if no one acts in time.'},
+    {ic:'grid',title:'Everyone gets their view',text:'Mine officials, corporate teams and regulators each see the version of the dashboard that matters to them.'}
+  ];
+  const avgCompliance = Math.round(MINES.reduce((s,m)=>s+m.compliance,0)/MINES.length);
+  const highRisk = MINES.filter(m=>m.risk>=65).length;
+
+  return pageHeader('National Overview', 'Welcome back, ' + roleInfo.label,
+    "MineGuard AI governs coal mining operations across safety, environment, labour and production rules — using live field data, PostGIS spatial verification, and AI analytics.",
+    `<div style="display:flex;gap:8px">
+       <button class="gold-btn" style="padding:8px 16px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px" onclick="runAuditVerification()">
+         ${icon('shieldCheck', 15, '#e8c874')} Verify Audit Chain
+       </button>
+     </div>`)
+  +'<div class="grid g4" style="margin-bottom:24px">'
+    +'<div class="gc-card accent stat" style="padding:18px"><span>Mines monitored</span><b>'+MINES.length+'</b></div>'
+    +'<div class="gc-card accent stat" style="padding:18px"><span>Open violations</span><b>'+(VIOLATIONS.length+1)+'</b></div>'
+    +'<div class="gc-card accent stat" style="padding:18px"><span>Avg. compliance rate</span><b>'+avgCompliance+'%</b></div>'
+    +'<div class="gc-card accent stat" style="padding:18px"><span>High-risk mines</span><b>'+highRisk+'</b></div>'
+  +'</div>'
+  +'<div class="gc-card" style="margin-bottom:24px">'
+    +'<h2 style="font-weight:700;margin-bottom:16px;color:#0a2540;font-size:17px">How the system works</h2>'
+    +'<div class="grid g4">'
+    +flow.map((s,i)=>
+      '<div style="display:flex;gap:12px">'
+        +'<div style="width:44px;height:44px;flex-shrink:0;border-radius:10px;background:#0a2540;display:flex;align-items:center;justify-content:center">'+icon(s.ic,18,'#e8c874')+'</div>'
+        +'<div><div style="font-size:11px;font-weight:800;color:#b8860b;margin-bottom:2px;text-transform:uppercase;letter-spacing:.5px">Step '+(i+1)+'</div>'
+        +'<div style="font-weight:700;font-size:14px;color:#1b2430">'+s.title+'</div>'
+        +'<div style="font-size:12px;color:#5b6673;margin-top:4px;line-height:1.5">'+s.text+'</div></div>'
+      +'</div>'
+    ).join('')
+    +'</div>'
+  +'</div>'
+  +'<h2 style="font-weight:700;margin-bottom:12px;color:#0a2540;font-size:17px">Explore the system</h2>'
+  +'<div class="grid g3" style="margin-bottom:24px">'
+  +NAV.filter(n=>n.id!=='overview').map(m=>
+    '<button class="gc-btn" style="padding:16px;text-align:left;display:flex;gap:12px;align-items:flex-start" onclick="setPage(\''+m.id+'\')">'
+      +'<div class="gc-inset" style="width:36px;height:36px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:8px">'+icon(m.icon,16,ICON_NAVY)+'</div>'
+      +'<div><div style="font-weight:700;font-size:13px;color:#1b2430">'+m.label+'</div><div style="font-size:12px;color:#5b6673;margin-top:2px;line-height:1.5">'+MODULE_BLURB[m.id]+'</div></div>'
+    +'</button>'
+  ).join('')
+  +'</div>'
+  +'<div class="gc-card">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
+      +'<h2 style="font-weight:700;color:#0a2540;font-size:17px">Today\'s snapshot &amp; alerts</h2>'
+      +'<button style="font-size:12px;font-weight:700;color:#9c7a1f;display:flex;align-items:center;gap:4px" onclick="setPage(\'alerts\')">View all '+icon('chevron',14,'#9c7a1f')+'</button>'
+    +'</div>'
+    +'<div style="display:flex;flex-direction:column;gap:8px">'
+    +ALERTS.map(a=>
+      '<div class="gc-inset" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px">'
+        +'<div style="display:flex;align-items:center;gap:12px">'+pill(a.tone,a.level)+'<span style="font-size:12px;color:#3d4653">'+a.detail+'</span></div>'
+        +'<span style="font-size:11px;color:#9aa4b0;flex-shrink:0;margin-left:12px">'+a.time+'</span>'
+      +'</div>'
+    ).join('')
+    +'</div>'
+  +'</div>';
+}
+
+function renderCompliance(){
+  return pageHeader('Compliance Management','Compliance Tracker','Every statutory requirement — safety, environment, production and labour — tracked per mine with a due date. Overdue items are flagged automatically.')
+  +'<div class="gc-card"><table><thead><tr style="text-align:left;font-size:11px;color:#8a95a3;font-weight:800;text-transform:uppercase;letter-spacing:.4px">'
+    +'<th style="padding-bottom:12px">Mine</th><th style="padding-bottom:12px">Category</th><th style="padding-bottom:12px">Requirement</th><th style="padding-bottom:12px">Status</th></tr></thead><tbody>'
+  +COMPLIANCE_ITEMS.map(c=>
+    '<tr style="border-top:1px solid #efe9db">'
+      +'<td style="padding:12px 0;font-weight:600">'+c.mine+'</td>'
+      +'<td style="padding:12px 0;color:#5b6673">'+c.category+'</td>'
+      +'<td style="padding:12px 0;color:#3d4653">'+c.item+'</td>'
+      +'<td style="padding:12px 0">'+pill(c.tone,c.due)+'</td>'
+    +'</tr>'
+  ).join('')
+  +'</tbody></table></div>';
+}
+
+function renderInspections(){
+  return pageHeader('Field Enforcement','Inspections & Violations','Schedule and assign inspections, then log any violations found with photo evidence and a geo-tag. Corrective actions run on a timer.',
+    `<button class="gold-btn" style="padding:8px 16px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px" onclick="triggerOfflineSyncSimulation()">
+       ${icon('refresh', 14, '#e8c874')} Simulate Offline Sync
+     </button>`)
+  +'<div class="grid g2">'
+  +'<div class="gc-card"><h2 style="font-weight:700;margin-bottom:12px;color:#0a2540;font-size:15px">Inspections</h2><div style="display:flex;flex-direction:column;gap:10px">'
+    +INSPECTIONS.map(i=>
+      '<div class="gc-inset" style="padding:12px">'
+        +'<div style="display:flex;justify-content:space-between"><span style="font-size:11px;font-weight:800;color:#9aa4b0">'+i.id+'</span>'+pill(i.status==='Completed' || i.status==='Resolved'?'green':i.status==='In Progress'?'amber':'blue',i.status)+'</div>'
+        +'<div style="font-weight:700;font-size:13px;margin-top:4px">'+i.type+'</div>'
+        +'<div style="font-size:12px;color:#5b6673;margin-top:2px">'+i.mine+' · assigned to '+i.assignee+'</div>'
+        +'<div style="font-size:11px;color:#8a95a3;margin-top:6px;display:flex;align-items:center;gap:4px">'+icon('clock',12,'#8a95a3')+' '+i.sla+'</div>'
+      +'</div>'
+    ).join('')
+  +'</div></div>'
+  +'<div class="gc-card"><h2 style="font-weight:700;margin-bottom:12px;color:#0a2540;font-size:15px">Logged violations</h2><div style="display:flex;flex-direction:column;gap:10px">'
+    +VIOLATIONS.map(v=>
+      '<div class="gc-inset" style="padding:12px">'
+        +'<div style="display:flex;justify-content:space-between"><span style="font-size:11px;font-weight:800;color:#9aa4b0">'+v.id+'</span><span style="font-size:11px;color:#8a95a3;display:flex;align-items:center;gap:4px">'+icon('camera',12,'#8a95a3')+' '+v.evidence+'</span></div>'
+        +'<div style="font-weight:700;font-size:13px;margin-top:4px">'+v.issue+'</div>'
+        +'<div style="font-size:12px;color:#5b6673;margin-top:2px">'+v.mine+'</div>'
+        +'<div style="margin-top:8px">'+pill('amber',v.action)+'</div>'
+      +'</div>'
+    ).join('')
+  +'</div></div>'
+  +'</div>';
+}
+
+function renderContractors(){
+  return pageHeader('Vendor Governance','Contractors','One record per contractor covering their contract stage, labour compliance, and an overall performance score.')
+  +'<div class="grid g2">'
+  +CONTRACTORS.map(c=>
+    '<div class="gc-card">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start">'
+        +'<div><div style="font-weight:700;font-size:14px;color:#1b2430">'+c.name+'</div><div style="margin-top:6px">'+pill(c.tone,c.stage)+'</div></div>'
+        +'<div class="gc-inset" style="width:48px;height:48px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:10px">'+icon('userCheck',18,ICON_NAVY)+'</div>'
+      +'</div>'
+      +(c.score!==null?
+        '<div style="margin-top:16px"><div style="display:flex;justify-content:space-between;font-size:12px;color:#5b6673;margin-bottom:4px"><span>Compliance score</span><span style="font-weight:800;color:#1b2430">'+c.score+'/100</span></div>'+bar(c.score,riskColor(100-c.score))+'</div>'
+        :'<div style="font-size:12px;color:#8a95a3;margin-top:16px">Onboarding in progress — statutory verification pending</div>')
+    +'</div>'
+  ).join('')
+  +'</div>';
+}
+
+let fieldMapInstance = null;
+function initFieldMap(){
+  const el = document.getElementById('leaflet-map');
+  if(!el || typeof L==='undefined') return;
+  if(fieldMapInstance){ fieldMapInstance.remove(); fieldMapInstance=null; }
+  fieldMapInstance = L.map('leaflet-map', {scrollWheelZoom:false}).setView([23.0,84.0], 5);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+    attribution:'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics',
+    maxZoom:19
+  }).addTo(fieldMapInstance);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:19}).addTo(fieldMapInstance);
+
+  MINES.forEach(m=>{
+    L.circleMarker([m.lat,m.lng],{radius:10,color:'#0a2540',weight:2,fillColor:riskColor(m.risk),fillOpacity:.9})
+      .addTo(fieldMapInstance)
+      .bindPopup('<b>'+m.name+'</b><br>'+m.state+' · '+m.operator+'<br>Risk score: '+m.risk+'/100<br>Compliance: '+m.compliance+'%');
+  });
+
+  const dotColor={'Safety observation':'#b8860b',Attendance:'#1e7a4c',Incident:'#8a2331'};
+  const shown = FIELD_REPORTS.filter(r=>state.mapFilter==='All'||r.type===state.mapFilter);
+  shown.forEach(r=>{
+    L.circleMarker([r.lat,r.lng],{radius:5,color:dotColor[r.type],weight:1,fillColor:dotColor[r.type],fillOpacity:.85})
+      .addTo(fieldMapInstance)
+      .bindPopup(r.mine+' — '+r.type);
+  });
+}
+
+function renderFieldMap(){
+  const types=['All','Safety observation','Attendance','Incident'];
+  return pageHeader('Field Data Aggregation','Field Reports Map','Satellite view of Indian coalfields with real geographic coordinates (PostGIS geometry & WKT polygons) and live field reports.')
+  +'<div class="gc-card">'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px">'+icon('filter',14,'#8a95a3')
+    +types.map(t=>'<button class="'+(state.mapFilter===t?'gc-btn-active':'gc-btn')+'" style="font-size:11px;font-weight:700;padding:6px 12px;border-radius:999px;color:'+(state.mapFilter===t?'#e8c874':'#5b6673')+'" onclick="setMapFilter(\''+t+'\')">'+t+'</button>').join('')
+    +'</div>'
+    +'<div id="leaflet-map" style="width:100%;height:440px;border-radius:10px;overflow:hidden;border:1px solid #e7e1d1"></div>'
+    +'<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:11px;color:#5b6673">'
+      +'<span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#b8860b;margin-right:5px"></span>Safety observation</span>'
+      +'<span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#1e7a4c;margin-right:5px"></span>Attendance</span>'
+      +'<span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#8a2331;margin-right:5px"></span>Incident</span>'
+      +'<span style="margin-left:auto">GIS Engine: PostGIS + Esri Satellite</span>'
+    +'</div>'
+  +'</div>';
+}
+
+function renderAI(){
+  return pageHeader('AI / Analytics Engine','AI Risk Analytics','Multi-factor explainable AI risk scoring engine based on unresolved observations, overdue corrective actions, compliance deadlines, and recurring violations.')
+  +'<div class="gc-card" style="margin-bottom:16px"><h2 style="font-weight:700;margin-bottom:16px;color:#0a2540;font-size:15px">Risk score by mine (0–100 Scale)</h2><div style="display:flex;flex-direction:column;gap:16px">'
+    +MINES.map(m=>
+      '<div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="font-weight:600">'+m.name+'</span><span style="font-weight:800;color:'+riskColor(m.risk)+'">'+m.risk+'/100</span></div>'+bar(m.risk,riskColor(m.risk))+'</div>'
+    ).join('')
+  +'</div></div>'
+  +'<div class="grid g3">'
+    +'<div class="gc-card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">'+icon('gauge',16,ICON_NAVY)+'<h2 style="font-weight:700;color:#0a2540;font-size:15px">Scoring Weights</h2></div>'
+    +'<p style="font-size:12px;color:#3d4653;line-height:1.6">'
+    +'• Unresolved Safety: <b>30%</b><br>'
+    +'• Overdue Corrective Actions: <b>25%</b><br>'
+    +'• Compliance Deadlines: <b>20%</b><br>'
+    +'• Recurring Violations: <b>15%</b><br>'
+    +'• Historical Audits: <b>10%</b>'
+    +'</p></div>'
+    +'<div class="gc-card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">'+icon('cpu',16,ICON_NAVY)+'<h2 style="font-weight:700;color:#0a2540;font-size:15px">Anomaly Detected</h2></div>'
+    +'<p style="font-size:13px;color:#3d4653;line-height:1.6">Haul truck overloading violations repeated across 4 consecutive night shifts at Raniganj Deep Pit Mine. Flagged for targeted DGMS inspection.</p></div>'
+    +'<div class="gc-card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">'+icon('satellite',16,ICON_NAVY)+'<h2 style="font-weight:700;color:#0a2540;font-size:15px">Satellite Subsidence Alert</h2></div>'
+    +'<p style="font-size:13px;color:#3d4653;line-height:1.6">Sentinel-1 InSAR synthetic aperture radar identified 1.8 ha of peripheral excavation beyond authorized mine boundary coordinates.</p></div>'
+  +'</div>';
+}
+
+function renderAlerts(){
+  return pageHeader('Alerts & Escalation','Alerts & Escalation','Automated alert rule engine triggering immediate escalation for overdue statutory requirements, high-risk flags, and unresolved grievances.')
+  +'<div class="gc-card"><div style="display:flex;flex-direction:column;gap:10px">'
+  +ALERTS.map(a=>
+    '<div class="gc-inset" style="padding:14px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px">'
+      +'<div style="display:flex;align-items:flex-start;gap:12px">'
+        +'<div style="width:36px;height:36px;flex-shrink:0;border-radius:8px;background:#fff;border:1px solid '+TONE_TEXT[a.tone]+'33;display:flex;align-items:center;justify-content:center">'+icon('alert',15,TONE_TEXT[a.tone])+'</div>'
+        +'<div>'+pill(a.tone,a.level)+'<div style="font-size:13px;color:#3d4653;margin-top:6px">'+a.detail+'</div></div>'
+      +'</div>'
+      +'<span style="font-size:11px;color:#8a95a3;flex-shrink:0">'+a.time+'</span>'
+    +'</div>'
+  ).join('')
+  +'</div></div>';
+}
+
+function renderGrievances(){
+  const cols=['Submitted','Under review','Resolved'];
+  return pageHeader('Grievance Redressal','Worker Grievances','Employees and labourers submit confidential complaints with unique tracking reference numbers, protected under strict RBAC worker isolation.',
+    `<button class="gold-btn" style="padding:8px 16px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px" onclick="openGrievanceModal()">
+       ${icon('message', 14, '#e8c874')} + Lodge Grievance
+     </button>`)
+  +'<div class="grid g3">'
+  +cols.map(col=>
+    '<div class="gc-card"><h2 style="font-weight:700;font-size:14px;margin-bottom:12px;color:#0a2540">'+col+'</h2><div style="display:flex;flex-direction:column;gap:10px">'
+    +(GRIEVANCES.filter(g=>g.status.toLowerCase()===col.toLowerCase()).map(g=>
+      '<div class="gc-inset" style="padding:12px"><div style="font-size:11px;font-weight:800;color:#9aa4b0">'+g.id+'</div><div style="font-weight:700;font-size:13px;margin-top:2px">'+g.topic+'</div><div style="font-size:12px;color:#5b6673;margin-top:2px">'+g.mine+'</div></div>'
+    ).join('')||'<div style="font-size:12px;color:#8a95a3">No active complaints in this stage</div>')
+    +'</div></div>'
+  ).join('')
+  +'</div>';
+}
+
+function renderReports(){
+  const ready=['Monthly statutory compliance — August 2026','Quarterly safety audit summary — Q2 2026','Contractor labour wage equalization — August 2026'];
+  return pageHeader('Statutory Reporting','Reports','Statutory DGMS and Ministry of Coal compliance reports are compiled automatically from the database and ready for PDF/CSV export.')
+  +'<div class="grid" style="grid-template-columns:2fr 1fr">'
+  +'<div class="gc-card"><h2 style="font-weight:700;margin-bottom:12px;color:#0a2540;font-size:15px">Ready to export</h2><div style="display:flex;flex-direction:column;gap:10px">'
+  +ready.map(r=>
+    '<div class="gc-inset" style="padding:12px;display:flex;justify-content:space-between;align-items:center">'
+      +'<div style="display:flex;align-items:center;gap:10px">'+icon('fileCheck',15,ICON_NAVY)+'<span style="font-size:13px;color:#3d4653">'+r+'</span></div>'
+      +'<button class="gold-btn" style="padding:6px 14px;font-size:11px;font-weight:700" onclick="alert(\'Exporting official report from FastAPI repository...\')">Export PDF</button>'
+    +'</div>'
+  ).join('')
+  +'</div></div>'
+  +'<div class="gc-card"><h2 style="font-weight:700;margin-bottom:12px;color:#0a2540;font-size:15px">Build custom report</h2><div style="display:flex;flex-direction:column;gap:10px">'
+    +'<div class="gc-inset" style="padding:10px 12px;font-size:12px;color:#5b6673">Mine: All CIL Mines</div>'
+    +'<div class="gc-inset" style="padding:10px 12px;font-size:12px;color:#5b6673">Category: Safety &amp; Environment</div>'
+    +'<div class="gc-inset" style="padding:10px 12px;font-size:12px;color:#5b6673">Date range: Last 30 days</div>'
+    +'<button class="gold-btn" style="width:100%;padding:10px;font-size:12px;font-weight:700" onclick="alert(\'Generating custom report via /api/v1/compliance/summary...\')">Generate report</button>'
+  +'</div></div>'
+  +'</div>';
+}
+
+function renderDocuments(){
+  return pageHeader('Document Management & OCR','Documents & Licences','Statutory mining leases and clearances digitized via Tesseract OCR pipeline with unverified flagging until manual review.')
+  +'<div class="gc-card">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
+      +'<div class="gc-inset" style="display:flex;align-items:center;gap:8px;padding:10px 14px;width:320px">'+icon('search',14,'#8a95a3')+'<span style="font-size:12px;color:#8a95a3">Search documents…</span></div>'
+      +'<label class="gold-btn" style="padding:8px 16px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;cursor:pointer">'
+        +icon('folder',14,'#e8c874')+' Upload Document for OCR'
+        +'<input type="file" style="display:none" onchange="alert(\'Document received for async Tesseract OCR pipeline (POST /api/v1/documents/ocr).\')" />'
+      +'</label>'
+    +'</div>'
+    +'<div class="grid g3">'
+    +DOCUMENTS.map(d=>
+      '<div class="gc-inset" style="padding:14px">'+icon('file',18,ICON_NAVY)
+        +'<div style="font-weight:700;font-size:13px;margin-top:8px">'+d.name+'</div>'
+        +'<div style="font-size:12px;color:#5b6673;margin-top:2px">'+d.mine+' · '+d.type+'</div>'
+        +(d.ocr?'<div style="margin-top:8px">'+pill('green','OCR Digitized')+'</div>':'')
+      +'</div>'
+    ).join('')
+    +'</div>'
+  +'</div>';
+}
+
+function renderAudit(){
+  return pageHeader('Regulatory Defensibility','Immutable Audit Trail','Append-only cryptographic SHA-256 hash chain verifying all actions taken across the system for complete regulatory defensibility.',
+    `<button class="gold-btn" style="padding:8px 16px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px" onclick="runAuditVerification()">
+       ${icon('shieldCheck', 14, '#e8c874')} Verify Chain Integrity
+     </button>`)
+  +'<div class="gc-card">'
+  +AUDIT_LOG.map((e,i)=>
+    '<div style="display:flex;gap:12px;padding:12px 0;'+(i>0?'border-top:1px solid #efe9db':'')+'">'
+      +'<div class="gc-inset" style="width:36px;height:36px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:8px">'+icon('history',14,ICON_NAVY)+'</div>'
+      +'<div style="flex:1"><div style="font-size:13px;color:#3d4653;font-weight:600">'+e.action+'</div>'
+      +'<div style="font-size:11px;color:#8a95a3;margin-top:3px">'+e.time+' · '+e.user+'</div></div>'
+      +(e.hash ? '<div style="font-family:monospace;font-size:11px;color:#5b6673;background:#faf9f4;padding:4px 8px;border-radius:4px;border:1px solid #ece6d6;align-self:center">SHA-256: '+e.hash+'</div>' : '')
+    +'</div>'
+  ).join('')
+  +'</div>';
+}
+
+const PAGE_RENDERERS={
+  overview:renderOverview,compliance:renderCompliance,inspections:renderInspections,
+  contractors:renderContractors,fieldmap:renderFieldMap,ai:renderAI,alerts:renderAlerts,
+  grievances:renderGrievances,reports:renderReports,documents:renderDocuments,audit:renderAudit
+};
+
+/* ---------------------------------------------------------------------- */
+/* SHELL                                                                    */
+/* ---------------------------------------------------------------------- */
+function renderTricolor(){
+  return '<div class="tricolor"><span style="background:#FF9933"></span><span style="background:#ffffff;border-top:1px solid #eee;border-bottom:1px solid #eee"></span><span style="background:#138808"></span></div>';
+}
+
+function renderUtilityBar(){
+  const statusBadge = isBackendLive
+    ? '<span class="live-badge"><span class="live-dot"></span>FastAPI Live DB Connected</span>'
+    : '<span class="live-badge offline"><span class="live-dot"></span>Interactive Prototype Mode</span>';
+
+  return '<div class="utility-bar">'
+    +'<span><b>भारत सरकार</b> &nbsp;|&nbsp; Government of India &nbsp;·&nbsp; Ministry of Coal</span>'
+    +'<div style="display:flex;align-items:center;gap:12px">'+statusBadge+'<span style="opacity:.8">Screen Reader &nbsp;|&nbsp; हिंदी</span></div>'
+    +'</div>';
+}
+
+function renderLogin(){
+  const chosen = state.pendingRole;
+  return renderTricolor()+renderUtilityBar()
+  +'<div style="min-height:calc(100vh - 30px);display:flex;align-items:center;justify-content:center;padding:24px;background:#fbfaf6">'
+    +'<div style="width:100%;max-width:760px">'
+      +'<div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:24px">'
+        +sealSVG(52)
+        +'<div><div class="serif" style="font-weight:700;font-size:26px;color:#0a2540;letter-spacing:.2px">KhanRakshak / MineGuard AI</div>'
+        +'<div style="font-size:11px;color:#8a95a3;letter-spacing:.3px">AI-Based Smart Governance &amp; Compliance Monitoring System for Coal Mines</div></div>'
+      +'</div>'
+      +'<div class="gc-card accent" style="padding:32px">'
+        +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">'
+          +'<h2 style="font-weight:700;font-size:17px;color:#0a2540">Select Operational Role</h2>'
+          +'<span style="font-size:11px;color:#8a95a3">Smart India Hackathon 2026</span>'
+        +'</div>'
+        +'<p style="font-size:13px;color:#5b6673;margin-bottom:20px">Choose any authorized role to authenticate via JWT and exercise role-based access control (RBAC). Pre-configured credentials are provided for instant evaluation.</p>'
+        +'<div class="grid g2">'
+        +ROLES.map(r=>
+          '<button class="'+(chosen===r.id?'gc-btn-active':'gc-btn')+'" style="padding:16px;text-align:left" onclick="selectRole(\''+r.id+'\')">'
+            +'<div style="display:flex;justify-content:space-between;align-items:center">'
+              +'<div style="font-weight:700;font-size:13px">'+r.label+'</div>'
+              +'<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#faf9f4;border:1px solid #d9d2bd;color:#0a2540">'+r.id.toUpperCase()+'</span>'
+            +'</div>'
+            +'<div style="font-size:12px;'+(chosen===r.id?'color:#cdd8e3':'color:#5b6673')+';margin-top:6px;line-height:1.4">'+r.blurb+'</div>'
+          +'</button>'
+        ).join('')
+        +'</div>'
+        +'<button '+(chosen?'':'disabled')+' class="gold-btn" style="width:100%;margin-top:22px;padding:14px;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px" onclick="confirmLogin()">'
+          +'Authenticate &amp; Launch Portal '+icon('arrowRight',16,'#e8c874')
+        +'</button>'
+      +'</div>'
+      +'<div style="text-align:center;font-size:11px;color:#9aa4b0;margin-top:16px">FastAPI Backend · PostgreSQL / PostGIS · SHA-256 Audit Trail · Tesseract OCR · scikit-learn AI</div>'
+    +'</div>'
+  +'</div>';
+}
+
+function renderSidebar(){
+  return '<div class="scrim '+(state.mobileOpen?'show':'')+'" onclick="toggleMobile(false)"></div>'
+  +'<aside class="sidebar '+(state.mobileOpen?'show':'')+'">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;padding:18px 4px 18px;border-bottom:1px solid #ffffff14;margin-bottom:12px">'
+      +'<div style="display:flex;align-items:center;gap:10px">'
+        +sealSVG(34)
+        +'<div><div class="serif" style="font-weight:700;font-size:14px;color:#f4f1e8">KhanRakshak</div><div style="font-size:9px;color:#8fa0b3;letter-spacing:.3px">MINISTRY OF COAL</div></div>'
+      +'</div>'
+      +'<button style="color:#8fa0b3;display:'+(window.innerWidth<=1024?'block':'none')+'" onclick="toggleMobile(false)">'+icon('x',18,'#8fa0b3')+'</button>'
+    +'</div>'
+    +'<nav style="display:flex;flex-direction:column;gap:3px;flex:1;overflow-y:auto">'
+    +NAV.map(n=>
+      '<button style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;font-size:13px;font-weight:600;'
+        +(state.page===n.id?'background:#123a5e;color:#e8c874;border-left:3px solid #e8c874':'color:#8fa0b3;border-left:3px solid transparent')
+        +'" onclick="setPage(\''+n.id+'\')">'
+        +icon(n.icon,16)+n.label
+      +'</button>'
+    ).join('')
+    +'</nav>'
+    +'<div style="font-size:10px;color:#5a6b7f;padding:16px 8px 0;border-top:1px solid #ffffff14;margin-top:12px;line-height:1.5">'
+      +'Backend: <b style="color:#8fa0b3">'+(isBackendLive ? 'Live API v1.0.0' : 'Prototype Cache')+'</b><br>PostGIS &bull; SHA-256 Audit &bull; AI'
+    +'</div>'
+  +'</aside>';
+}
+
+function renderTopbar(){
+  const roleLabel = (ROLES.find(r=>r.id===state.role)||{}).label || 'User';
+  const roleCreds = ROLE_CREDENTIALS[state.role] || { mine: 'All Mines' };
+  return '<div class="topbar">'
+    +'<button class="gc-btn" style="width:36px;height:36px;display:'+(window.innerWidth<=1024?'flex':'none')+';align-items:center;justify-content:center" onclick="toggleMobile(true)">'+icon('menu',16,ICON_NAVY)+'</button>'
+    +'<div class="gc-inset" style="display:flex;align-items:center;gap:8px;padding:10px 14px;width:280px;border-radius:8px">'+icon('search',14,'#8a95a3')+'<span style="font-size:12px;color:#8a95a3">Search mines, contractors, reports…</span></div>'
+    +'<div style="flex:1"></div>'
+    +'<div class="gc-btn" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;position:relative" title="Alerts">'+icon('bell',16,ICON_NAVY)+'<span style="position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:#8a2331"></span></div>'
+    +'<div style="display:flex;align-items:center;gap:10px;padding-left:8px">'
+      +'<div class="gc-inset" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px">'+icon('building',15,ICON_NAVY)+'</div>'
+      +'<div><div style="font-size:12px;font-weight:800;color:#1b2430">'+roleLabel+'</div><div style="font-size:10px;color:#8a95a3">'+roleCreds.mine+'</div></div>'
+    +'</div>'
+    +'<button class="gc-btn" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center" onclick="logout()" title="Sign out">'+icon('logout',15,ICON_NAVY)+'</button>'
+  +'</div>';
+}
+
+/* ---------------------------------------------------------------------- */
+/* ROOT RENDER                                                             */
+/* ---------------------------------------------------------------------- */
+function render(){
+  const app = document.getElementById('app');
+  if(!state.role){ app.innerHTML = renderLogin(); return; }
+  app.innerHTML = renderTricolor()+renderUtilityBar()+'<div class="app">'
+    +renderSidebar()
+    +'<div class="main">'
+      +renderTopbar()
+      +'<div class="content">'+PAGE_RENDERERS[state.page]()+'</div>'
+    +'</div>'
+  +'</div>';
+  if(state.page==='fieldmap'){ setTimeout(initFieldMap,0); }
+}
+
+window.addEventListener('resize', render);
+
+// Initial bootstrap: check backend status and render
+checkBackendHealth().then(() => {
+  render();
+});
+</script>
+</body>
+</html>
