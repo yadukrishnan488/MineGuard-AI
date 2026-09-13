@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: mineguard_postgis
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mineguard}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mineguard_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-mineguard_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mineguard} -d ${POSTGRES_DB:-mineguard_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mineguard_net
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mineguard_api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PROJECT_NAME: "MineGuard AI"
+      ENVIRONMENT: "production"
+      DATABASE_URL: "postgresql+psycopg://${POSTGRES_USER:-mineguard}:${POSTGRES_PASSWORD:-mineguard_pass}@db:5432/${POSTGRES_DB:-mineguard_db}"
+      SECRET_KEY: ${SECRET_KEY:-mineguard-production-super-secret-jwt-key-change-me}
+      ACCESS_TOKEN_EXPIRE_MINUTES: 60
+      REFRESH_TOKEN_EXPIRE_DAYS: 7
+      UPLOAD_DIR: "/app/uploads"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+    networks:
+      - mineguard_net
+
+volumes:
+  postgis_data:
+    driver: local
+
+networks:
+  mineguard_net:
+    driver: bridge
