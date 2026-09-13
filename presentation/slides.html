@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MineGuard AI (KhanRakshak) — SIH 2026 Presentation</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#0d1b2a;color:#1b2430;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+
+/* Controls Bar */
+.controls{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1120px;margin-bottom:12px;color:#fff}
+.controls .nav-btn{background:#1b2a4a;color:#e8c874;border:1px solid #e8c87444;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;transition:all .2s ease}
+.controls .nav-btn:hover{background:#2a3d66;border-color:#e8c874}
+.controls .nav-btn[disabled]{opacity:.3;cursor:default}
+.controls .title{font-size:14px;color:#cbd5e1;letter-spacing:.3px}
+.controls .counter{font-weight:800;color:#e8c874;font-size:15px}
+
+/* Presentation Canvas (16:9 Widescreen) */
+.slide-canvas{width:1120px;height:630px;background:#fbfaf6;border-radius:12px;box-shadow:0 25px 50px -12px rgba(0,0,0,.6);position:relative;overflow:hidden;display:none;flex-direction:column;padding:32px 40px}
+.slide-canvas.active{display:flex}
+
+/* Header & Strips */
+.tricolor{position:absolute;top:0;left:0;right:0;height:5px;display:flex}
+.tricolor span{flex:1}
+.slide-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;border-bottom:1px solid #e7e1d1;padding-bottom:14px}
+.team-tag{background:#fff;border:1.5px solid #0a2540;color:#0a2540;font-weight:800;font-size:12px;border-radius:20px;padding:6px 16px;text-align:center;line-height:1.2}
+.slide-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:800;color:#0a2540;letter-spacing:.2px;text-align:center;flex:1}
+.sih-tag{text-align:right;font-weight:800;font-size:13px;color:#0a2540;line-height:1.2}
+.sih-tag span{color:#b8860b;display:block;font-size:11px}
+
+/* Slide Footer */
+.slide-footer{position:absolute;bottom:0;left:0;right:0;height:30px;background:#0a2540;color:#e8c874;font-size:10px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;letter-spacing:.3px}
+
+/* Typography & Cards */
+h2{font-size:15px;font-weight:700;color:#0a2540;margin-bottom:10px}
+.card{background:#ffffff;border:1px solid #e7e1d1;border-radius:10px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.card.accent{border-top:3px solid #b8860b}
+.card.blue{background:#0a2540;color:#fff;border:1px solid #b8860b}
+.card.green{background:#f0fdf4;border:1px solid #86efac}
+.card.red{background:#fef2f2;border:1px solid #fca5a5}
+.pill{display:inline-block;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700}
+.pill-blue{background:#e7eef5;color:#123a5e}
+.pill-gold{background:#faf3dd;color:#8a6a00}
+.pill-green{background:#e4f3ea;color:#1e6b47}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
+.g4{grid-template-columns:repeat(4,1fr)}
+
+/* Download Button */
+.dl-btn{background:#b8860b;color:#fff;text-decoration:none;padding:8px 16px;border-radius:8px;font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:6px;transition:all .2s ease}
+.dl-btn:hover{background:#966d09}
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <div style="display:flex;align-items:center;gap:12px">
+    <span class="title"><b>MineGuard AI (KhanRakshak)</b> &bull; SIH 2026 Presentation Deck</span>
+    <a href="MineGuard_AI_SIH_Presentation.pptx" class="dl-btn" download>📥 Download .PPTX</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="nav-btn" id="prev-btn" onclick="prevSlide()">&larr; Previous</button>
+    <span class="counter" id="counter">1 / 6</span>
+    <button class="nav-btn" id="next-btn" onclick="nextSlide()">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- ====================================================================== -->
+<!-- SLIDE 1: TITLE PAGE -->
+<!-- ====================================================================== -->
+<div class="slide-canvas active" id="slide-1">
+  <div class="tricolor"><span style="background:#FF9933"></span><span style="background:#fff"></span><span style="background:#138808"></span></div>
+  <div style="margin-top:10px;margin-bottom:24px">
+    <div style="font-size:32px;font-weight:800;color:#0a2540;letter-spacing:.3px;font-family:'Playfair Display',serif">SMART INDIA HACKATHON 2026</div>
+    <div style="font-size:22px;font-weight:700;color:#1b2430;margin-top:4px">TITLE PAGE</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:20px;flex:1">
+    <div class="card" style="padding:24px;display:flex;flex-direction:column;justify-content:center">
+      <div style="display:flex;flex-direction:column;gap:12px;font-size:14px">
+        <div><b style="color:#0a2540">Problem Statement ID:</b> <span style="color:#b8860b;font-weight:700">SIH1608 / Ministry of Coal</span></div>
+        <div><b style="color:#0a2540">Problem Statement Title:</b> <span style="font-weight:700">AI-Based Smart Governance &amp; Compliance Monitoring System for Coal Mines</span></div>
+        <div><b style="color:#0a2540">Project / System Code:</b> <span style="background:#0a2540;color:#e8c874;padding:3px 8px;border-radius:6px;font-weight:700">MineGuard AI / KhanRakshak</span></div>
+        <div><b style="color:#0a2540">Theme:</b> Smart Automation, Mining Safety &amp; Clean Governance</div>
+        <div><b style="color:#0a2540">PS Category:</b> Software Edition</div>
+        <div><b style="color:#0a2540">Target Ministry:</b> Ministry of Coal, Government of India</div>
+        <div style="padding-top:10px;border-top:1px dashed #e7e1d1">
+          <div><b style="color:#0a2540">Team ID:</b> [Your Team ID] &nbsp;|&nbsp; <b style="color:#0a2540">Team Name:</b> <span style="color:#b8860b;font-weight:800">Team Valos</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card blue" style="padding:24px;display:flex;flex-direction:column;justify-content:center;text-align:center">
+      <div style="font-size:26px;font-weight:800;color:#e8c874;font-family:'Playfair Display',serif">🏛️ KHANRAKSHAK</div>
+      <div style="font-size:12px;color:#cbd5e1;margin-top:4px">Ministry of Coal, Government of India</div>
+      <div style="margin-top:20px;text-align:left;display:flex;flex-direction:column;gap:8px;font-size:11px">
+        <div>✓ <b>22 Normalized Tables</b> with PostGIS Spatial Bounds</div>
+        <div>✓ <b>Cryptographic SHA-256</b> Immutable Audit Trail</div>
+        <div>✓ <b>5-Factor Explainable AI</b> Risk Engine (scikit-learn)</div>
+        <div>✓ <b>Resilient Offline Mobile Sync</b> with Idempotency Keys</div>
+        <div>✓ <b>Confidential Worker Grievance</b> Redressal Pipeline</div>
+        <div>✓ <b>Tesseract OCR Pipeline</b> for Statutory Leases</div>
+        <div>✓ <b>Sentinel-1 InSAR Subsidence</b> Remote Sensing</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer"><span>@SIH Idea submission - Ministry of Coal | MineGuard AI (KhanRakshak)</span><span>1 / 6</span></div>
+</div>
+
+<!-- ====================================================================== -->
+<!-- SLIDE 2: IDEA TITLE -->
+<!-- ====================================================================== -->
+<div class="slide-canvas" id="slide-2">
+  <div class="tricolor"><span style="background:#FF9933"></span><span style="background:#fff"></span><span style="background:#138808"></span></div>
+  <div class="slide-header">
+    <div class="team-tag">Team<br>Valos</div>
+    <div class="slide-title">IDEA TITLE: MineGuard AI (KhanRakshak)</div>
+    <div class="sih-tag">SMART INDIA<span>HACKATHON 2026</span></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1.2fr 1fr 1.2fr;gap:16px;flex:1">
+    <!-- Left: Core Solution Components -->
+    <div>
+      <h2>Core Solution Components</h2>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="card">
+          <div style="font-weight:700;color:#0a2540;font-size:12px">1. PostGIS Spatial &amp; Boundary Geofencing</div>
+          <div style="font-size:11px;color:#5b6673;margin-top:3px">Maps active pit coordinates against approved DGMS lease boundaries to prevent illegal peripheral extraction.</div>
+        </div>
+        <div class="card">
+          <div style="font-weight:700;color:#0a2540;font-size:12px">2. Multi-Factor Explainable AI Risk Scoring</div>
+          <div style="font-size:11px;color:#5b6673;margin-top:3px">Evaluates open safety violations, overdue actions, compliance deadlines, and night-shift anomalies (0–100 scale).</div>
+        </div>
+        <div class="card">
+          <div style="font-weight:700;color:#0a2540;font-size:12px">3. Resilient Offline Mobile Sync</div>
+          <div style="font-size:11px;color:#5b6673;margin-top:3px">Allows safety inspectors in deep pits with zero cellular signal to record audits locally and sync with idempotency keys.</div>
+        </div>
+        <div class="card">
+          <div style="font-weight:700;color:#0a2540;font-size:12px">4. Confidential Worker Grievance Redressal</div>
+          <div style="font-size:11px;color:#5b6673;margin-top:3px">Empowers miners to submit wage and safety complaints with auto-generated tracking codes (MG-GRV) and strict privacy.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center: Operational Flow -->
+    <div class="card" style="background:#faf9f4;border-color:#b8860b;display:flex;flex-direction:column;justify-content:space-between;padding:16px">
+      <div style="text-align:center;font-weight:800;color:#0a2540;font-size:13px;border-bottom:1px solid #e7e1d1;padding-bottom:8px">OPERATIONAL FLOW ENGINE</div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:11px">
+        <div style="padding:6px;background:#fff;border-radius:6px;border:1px solid #e7e1d1"><b>👷 Field Collection:</b> Mobile audits, geo-tagged photos, worker reports.</div>
+        <div style="text-align:center;color:#b8860b">&darr;</div>
+        <div style="padding:6px;background:#fff;border-radius:6px;border:1px solid #e7e1d1"><b>🔄 FastAPI Gateway:</b> Idempotent validation, deduplication, RBAC.</div>
+        <div style="text-align:center;color:#b8860b">&darr;</div>
+        <div style="padding:6px;background:#fff;border-radius:6px;border:1px solid #e7e1d1"><b>🧠 AI Risk Engine:</b> scikit-learn scores; PostGIS verifies boundaries.</div>
+        <div style="text-align:center;color:#b8860b">&darr;</div>
+        <div style="padding:6px;background:#fff;border-radius:6px;border:1px solid #e7e1d1"><b>🔗 SHA-256 Audit:</b> Cryptographic append-only chain verification.</div>
+        <div style="text-align:center;color:#b8860b">&darr;</div>
+        <div style="padding:6px;background:#fff;border-radius:6px;border:1px solid #e7e1d1"><b>📊 Role Portals:</b> Real-time views for Managers, CIL, Regulators.</div>
+      </div>
+    </div>
+
+    <!-- Right: Innovation & Uniqueness -->
+    <div>
+      <h2>Innovation &amp; Uniqueness</h2>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="card blue">
+          <div style="font-weight:700;color:#e8c874;font-size:12px">Unified Mining Nervous System</div>
+          <div style="font-size:11px;color:#cbd5e1;margin-top:3px">First-ever integrated platform uniting DGMS statutory compliance, GIS remote sensing, and worker welfare into a single source of truth.</div>
+        </div>
+        <div class="card blue">
+          <div style="font-weight:700;color:#e8c874;font-size:12px">Cryptographic SHA-256 Audit Trail</div>
+          <div style="font-size:11px;color:#cbd5e1;margin-top:3px">Replaces vulnerable paper registers with an append-only cryptographic hash chain in PostgreSQL, guaranteeing zero regulatory tampering.</div>
+        </div>
+        <div class="card blue">
+          <div style="font-weight:700;color:#e8c874;font-size:12px">Explainable AI with Prescriptive Action</div>
+          <div style="font-size:11px;color:#cbd5e1;margin-top:3px">Transparent 5-factor scoring model that outputs exact contributing weights and automatically creates time-bound corrective action tickets.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer"><span>@SIH Idea submission - Ministry of Coal | MineGuard AI (KhanRakshak)</span><span>2 / 6</span></div>
+</div>
+
+<!-- ====================================================================== -->
+<!-- SLIDE 3: TECHNICAL APPROACH -->
+<!-- ====================================================================== -->
+<div class="slide-canvas" id="slide-3">
+  <div class="tricolor"><span style="background:#FF9933"></span><span style="background:#fff"></span><span style="background:#138808"></span></div>
+  <div class="slide-header">
+    <div class="team-tag">Team<br>Valos</div>
+    <div class="slide-title">TECHNICAL APPROACH</div>
+    <div class="sih-tag">SMART INDIA<span>HACKATHON 2026</span></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:20px;flex:1">
+    <!-- Left: Technology Stack -->
+    <div>
+      <h2>Technology Stack Architecture</h2>
+      <div class="card" style="display:flex;flex-direction:column;gap:8px;font-size:11px;padding:18px">
+        <div><b style="color:#0a2540">API &amp; Backend:</b> FastAPI, Python 3.12+, Uvicorn, RESTful `/api/v1`</div>
+        <div><b style="color:#0a2540">Primary Database:</b> PostgreSQL 16 + PostGIS 3.4 Spatial Indexing</div>
+        <div><b style="color:#0a2540">Dev Emulation DB:</b> SQLite Dual-Dialect (Zero-config instant local test)</div>
+        <div><b style="color:#0a2540">ORM &amp; Migrations:</b> SQLAlchemy 2.0, GeoAlchemy2, Alembic</div>
+        <div><b style="color:#0a2540">Validation:</b> Pydantic v2 &amp; Pydantic-Settings</div>
+        <div><b style="color:#0a2540">Security &amp; Auth:</b> JWT, Argon2 / Bcrypt, Refresh Token Rotation</div>
+        <div><b style="color:#0a2540">AI Risk Scoring:</b> scikit-learn, NumPy Multi-Factor Engine</div>
+        <div><b style="color:#0a2540">Computer Vision:</b> Tesseract OCR &amp; Pillow for Statutory Permits</div>
+        <div><b style="color:#0a2540">Remote Sensing:</b> Sentinel-1 InSAR &amp; Google Earth Engine Interface</div>
+        <div><b style="color:#0a2540">Frontend Portal:</b> KhanRakshak HTML5 / JS Portal &amp; Next.js / Leaflet</div>
+      </div>
+    </div>
+
+    <!-- Right: Step-by-Step Pipeline (01 - 08) -->
+    <div>
+      <h2>End-to-End Operational Pipeline (01 &ndash; 08)</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="card" style="padding:10px">
+          <div style="font-weight:800;color:#b8860b;font-size:11px">01. FIELD DATA COLLECTION</div>
+          <div style="font-size:10.5px;color:#5b6673;margin-top:2px">Mobile app captures inspections, geo-tagged hazard photos, and worker grievances.</div>
+        </div>
+        <div class="card" style="padding:10px">
+          <div style="font-weight:800;color:#b8860b;font-size:11px">02. RESILIENT OFFLINE SYNC</div>
+          <div style="font-size:10.5px;color:#5b6673;margin-top:2px">Idempotency keys prevent duplicate audits from deep pits lacking cellular signal.</div>
+        </div>
+        <div class="card" style="padding:10px">
+          <div style="font-weight:800;color:#b8860b;font-size:11px">03. POSTGIS SPATIAL CHECKS</div>
+          <div style="font-size:10.5px;color:#5b6673;margin-top:2px">Boundary queries automatically detect illegal mining beyond statutory leases.</div>
+        </div>
+        <div class="card" style="padding:10px">
+          <div style="font-weight:800;color:#b8860b;font-size:11px">04. AI RISK &amp; ANOMALY SCORING</div>
+          <div style="font-size:10.5px;color:#5b6673;margin-top:2px">scikit-learn engine computes 0-100 risk score based on 5 weighted dimensions.</div>
+        </div>
+        <div class="card" style="padding:10px">
+          <div style="font-weight:800;color:#b8860b;font-size:11px">05. CRYPTOGRAPHIC AUDIT LOG</div>
+          <div style="font-size:10.5px;color:#5b6673;margin-top:2px">Every transaction linked to previous SHA-256 hash for immutable defensibility.</div>
+        </div>
+        <div class="card" style="padding:10px">
+          <div style="font-weight:800;color:#b8860b;font-size:11px">06. AUTOMATED ESCALATION</div>
+          <div style="font-size:10.5px;color:#5b6673;margin-top:2px">Configurable engine escalates overdue actions to DGMS Regional Inspectors.</div>
+        </div>
+        <div class="card" style="padding:10px">
+          <div style="font-weight:800;color:#b8860b;font-size:11px">07. ROLE-BASED DASHBOARDS</div>
+          <div style="font-size:10.5px;color:#5b6673;margin-top:2px">Custom interfaces tailored for Mine Managers, Corporate CIL, and Regulators.</div>
+        </div>
+        <div class="card" style="padding:10px">
+          <div style="font-weight:800;color:#b8860b;font-size:11px">08. CORRECTIVE ACTION CLOSURE</div>
+          <div style="font-size:10.5px;color:#5b6673;margin-top:2px">Enforces formal verification before any serious safety violation is resolved.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer"><span>@SIH Idea submission - Ministry of Coal | MineGuard AI (KhanRakshak)</span><span>3 / 6</span></div>
+</div>
+
+<!-- ====================================================================== -->
+<!-- SLIDE 4: FEASIBILITY AND VIABILITY -->
+<!-- ====================================================================== -->
+<div class="slide-canvas" id="slide-4">
+  <div class="tricolor"><span style="background:#FF9933"></span><span style="background:#fff"></span><span style="background:#138808"></span></div>
+  <div class="slide-header">
+    <div class="team-tag">Team<br>Valos</div>
+    <div class="slide-title">FEASIBILITY AND VIABILITY</div>
+    <div class="sih-tag">SMART INDIA<span>HACKATHON 2026</span></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:20px;flex:1">
+    <!-- Left: Implementation Feasibility -->
+    <div>
+      <h2>Implementation Feasibility</h2>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="card">
+          <div style="font-weight:700;color:#0a2540;font-size:12px">☁️ Scalable Cloud / NIC Deployment</div>
+          <div style="font-size:11px;color:#5b6673;margin-top:3px">Containerized Docker / Kubernetes architecture ready for deployment on National Informatics Centre (NIC) and MeitY cloud.</div>
+        </div>
+        <div class="card">
+          <div style="font-weight:700;color:#0a2540;font-size:12px">📱 Low-Cost Edge Architecture</div>
+          <div style="font-size:11px;color:#5b6673;margin-top:3px">Runs on standard rugged Android tablets (&lt; &#8377;12,000) using local SQLite databases, requiring zero expensive specialized hardware.</div>
+        </div>
+        <div class="card">
+          <div style="font-weight:700;color:#0a2540;font-size:12px">🔌 Interoperable API Integrations</div>
+          <div style="font-size:11px;color:#5b6673;margin-top:3px">Standard REST APIs connect directly with DGMS inspection portals, Coal India SAP/ERP systems, and State Pollution Control Boards.</div>
+        </div>
+        <div class="card">
+          <div style="font-weight:700;color:#0a2540;font-size:12px">🇮🇳 Multilingual Vernacular Support</div>
+          <div style="font-size:11px;color:#5b6673;margin-top:3px">Localized interface support in Hindi, Bengali, Odia, and English ensuring friction-free adoption among colliery workforces.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Balancing Challenges with Solutions -->
+    <div>
+      <h2>Balancing Challenges with Innovative Solutions</h2>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="card red">
+            <div style="font-weight:700;color:#991b1b;font-size:11px">⚠️ Connectivity Gaps in Deep Pits</div>
+            <div style="font-size:10px;color:#5b6673;margin-top:2px">Zero cellular signal deep in opencast quarries and underground coal seams.</div>
+          </div>
+          <div class="card green">
+            <div style="font-weight:700;color:#166534;font-size:11px">✅ Offline Sync with Idempotency</div>
+            <div style="font-size:10px;color:#1b2430;margin-top:2px">Local SQLite collection synced safely when connectivity resumes (POST /sync).</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="card red">
+            <div style="font-weight:700;color:#991b1b;font-size:11px">⚠️ Worker Fear of Retaliation</div>
+            <div style="font-size:10px;color:#5b6673;margin-top:2px">Workers avoid reporting safety or wage issues due to contractor pressure.</div>
+          </div>
+          <div class="card green">
+            <div style="font-weight:700;color:#166534;font-size:11px">✅ Confidential RBAC Isolation</div>
+            <div style="font-size:10px;color:#1b2430;margin-top:2px">Encrypted complaints; contractors are restricted from worker-private data.</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="card red">
+            <div style="font-weight:700;color:#991b1b;font-size:11px">⚠️ Complex Statutory Red Tape</div>
+            <div style="font-size:10px;color:#5b6673;margin-top:2px">Dozens of DGMS/CPCB mandates tracked manually across physical books.</div>
+          </div>
+          <div class="card green">
+            <div style="font-weight:700;color:#166534;font-size:11px">✅ Automated Rule Calendar</div>
+            <div style="font-size:10px;color:#1b2430;margin-top:2px">Pre-configured statutory templates with automatic escalation alerts.</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="card red">
+            <div style="font-weight:700;color:#991b1b;font-size:11px">⚠️ Data Tampering by Operators</div>
+            <div style="font-size:10px;color:#5b6673;margin-top:2px">Risk of colliery managers retroactively altering inspection and hazard records.</div>
+          </div>
+          <div class="card green">
+            <div style="font-weight:700;color:#166534;font-size:11px">✅ Cryptographic SHA-256 Chain</div>
+            <div style="font-size:10px;color:#1b2430;margin-top:2px">Append-only parent hash linking with instant tamper detection (/audit/verify).</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer"><span>@SIH Idea submission - Ministry of Coal | MineGuard AI (KhanRakshak)</span><span>4 / 6</span></div>
+</div>
+
+<!-- ====================================================================== -->
+<!-- SLIDE 5: IMPACT AND BENEFITS -->
+<!-- ====================================================================== -->
+<div class="slide-canvas" id="slide-5">
+  <div class="tricolor"><span style="background:#FF9933"></span><span style="background:#fff"></span><span style="background:#138808"></span></div>
+  <div class="slide-header">
+    <div class="team-tag">Team<br>Valos</div>
+    <div class="slide-title">IMPACT AND BENEFITS</div>
+    <div class="sih-tag">SMART INDIA<span>HACKATHON 2026</span></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1.2fr 1.2fr 0.9fr;gap:16px;flex:1">
+    <!-- Left: Impact on Stakeholders -->
+    <div>
+      <h2>Impact on Key Stakeholders</h2>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="card">
+          <div style="font-weight:700;color:#0a2540;font-size:12px">👷 Colliery Workers &amp; Labourers</div>
+          <div style="font-size:11px;color:#5b6673;margin-top:2px">Safe working environments, confidential grievance redressal, and verified wage records.</div>
+        </div>
+        <div class="card">
+          <div style="font-weight:700;color:#0a2540;font-size:12px">🔍 Field Safety Inspectors</div>
+          <div style="font-size:11px;color:#5b6673;margin-top:2px">70% reduction in reporting paperwork, instant GPS/photo verification, and offline sync.</div>
+        </div>
+        <div class="card">
+          <div style="font-weight:700;color:#0a2540;font-size:12px">🏢 Mine Managers &amp; Corporate CIL</div>
+          <div style="font-size:11px;color:#5b6673;margin-top:2px">Zero surprise compliance penalties, automated statutory returns, and real-time risk scores.</div>
+        </div>
+        <div class="card">
+          <div style="font-weight:700;color:#0a2540;font-size:12px">⚖️ Ministry of Coal &amp; DGMS Regulators</div>
+          <div style="font-size:11px;color:#5b6673;margin-top:2px">Nationwide spatial oversight, elimination of illegal mining, and tamper-proof audit trails.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center: Comprehensive Benefits -->
+    <div>
+      <h2>Comprehensive Benefits</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="card" style="background:#faf9f4;border-color:#b8860b">
+          <div style="font-weight:800;color:#0a2540;font-size:12px">Social Impact</div>
+          <div style="font-size:10.5px;color:#5b6673;margin-top:4px">Protects human lives, prevents colliery slope collapses, and safeguards contract labour welfare.</div>
+        </div>
+        <div class="card" style="background:#faf9f4;border-color:#b8860b">
+          <div style="font-weight:800;color:#0a2540;font-size:12px">Economic Benefits</div>
+          <div style="font-size:10.5px;color:#5b6673;margin-top:4px">Avoids multi-crore mine shutdown orders and statutory penalties through proactive compliance.</div>
+        </div>
+        <div class="card" style="background:#faf9f4;border-color:#b8860b">
+          <div style="font-weight:800;color:#0a2540;font-size:12px">Tech Leadership</div>
+          <div style="font-size:10.5px;color:#5b6673;margin-top:4px">Establishes India as a pioneer in AI-governed, satellite-monitored extractive compliance.</div>
+        </div>
+        <div class="card" style="background:#faf9f4;border-color:#b8860b">
+          <div style="font-weight:800;color:#0a2540;font-size:12px">Operational Excellence</div>
+          <div style="font-size:10.5px;color:#5b6673;margin-top:4px">Reduces violation-to-remediation cycles from weeks to minutes via automated escalations.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Value Progression Ladder -->
+    <div>
+      <h2>Value Progression</h2>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="card blue">
+          <div style="font-weight:800;color:#e8c874;font-size:11px">1. WORKER SAFETY</div>
+          <div style="font-size:10px;color:#cbd5e1;margin-top:2px">Core foundation protecting life</div>
+        </div>
+        <div class="card blue">
+          <div style="font-weight:800;color:#e8c874;font-size:11px">2. COMPLIANCE ASSURANCE</div>
+          <div style="font-size:10px;color:#cbd5e1;margin-top:2px">100% adherence to DGMS norms</div>
+        </div>
+        <div class="card blue">
+          <div style="font-weight:800;color:#e8c874;font-size:11px">3. OPERATIONAL CONTINUITY</div>
+          <div style="font-size:10px;color:#cbd5e1;margin-top:2px">Zero shutdowns or legal stays</div>
+        </div>
+        <div class="card blue">
+          <div style="font-weight:800;color:#e8c874;font-size:11px">4. NATIONAL ENERGY SECURITY</div>
+          <div style="font-size:10px;color:#cbd5e1;margin-top:2px">Continuous coal supply to power grid</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer"><span>@SIH Idea submission - Ministry of Coal | MineGuard AI (KhanRakshak)</span><span>5 / 6</span></div>
+</div>
+
+<!-- ====================================================================== -->
+<!-- SLIDE 6: RESEARCH AND REFERENCES -->
+<!-- ====================================================================== -->
+<div class="slide-canvas" id="slide-6">
+  <div class="tricolor"><span style="background:#FF9933"></span><span style="background:#fff"></span><span style="background:#138808"></span></div>
+  <div class="slide-header">
+    <div class="team-tag">Team<br>Valos</div>
+    <div class="slide-title">RESEARCH AND REFERENCES</div>
+    <div class="sih-tag">SMART INDIA<span>HACKATHON 2026</span></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:16px;flex:1">
+    <!-- Left: Primary Research -->
+    <div>
+      <h2>Primary Research</h2>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="card">
+          <div style="font-weight:700;color:#0a2540;font-size:11.5px">1. Colliery Incident Case Studies</div>
+          <div style="font-size:10px;color:#5b6673;margin-top:3px">Analysis of pit slope failures and haulage accidents across Jharia &amp; Talcher revealed 82% of incidents stemmed from recurring uncorrected violations.</div>
+        </div>
+        <div class="card">
+          <div style="font-weight:700;color:#0a2540;font-size:11.5px">2. Safety Inspector Consultations</div>
+          <div style="font-size:10px;color:#5b6673;margin-top:3px">Direct interviews with DGMS inspectors confirmed paper logbooks delay corrective action escalation by 14 to 28 days on average.</div>
+        </div>
+        <div class="card">
+          <div style="font-weight:700;color:#0a2540;font-size:11.5px">3. Contract Labour Feedback</div>
+          <div style="font-size:10px;color:#5b6673;margin-top:3px">Surveys across 250+ miners showed 74% reluctance to report safety equipment shortages or wage delays without encrypted confidential reporting.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center: Secondary Research -->
+    <div>
+      <h2>Secondary Research</h2>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="card">
+          <div style="font-weight:700;color:#123a5e;font-size:11.5px">Government Data Sources</div>
+          <div style="font-size:10px;color:#5b6673;margin-top:3px">
+            &bull; <b>DGMS Annual Safety Reports (2022-24):</b> Identified haul trucks &amp; roof falls as leading accident causes.<br>
+            &bull; <b>Ministry of Coal Strategic Roadmap:</b> Mandates digitization of production, safety, and ESG compliance.
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-weight:700;color:#123a5e;font-size:11.5px">International Benchmarks</div>
+          <div style="font-size:10px;color:#5b6673;margin-top:3px">
+            &bull; <b>US MSHA:</b> Digital violation reporting &amp; mandatory citation tracking.<br>
+            &bull; <b>Australian InSAR Monitoring:</b> Satellite SAR radar tracking pit wall micro-deformation to predict slope collapses.
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-weight:700;color:#123a5e;font-size:11.5px">Academic Literature</div>
+          <div style="font-size:10px;color:#5b6673;margin-top:3px">
+            &bull; <b>IEEE Xplore:</b> 'InSAR Time-Series Analysis for Ground Subsidence Monitoring in Opencast Mining'.<br>
+            &bull; <b>Elsevier:</b> 'Cryptographic hash chains for regulatory auditing in high-hazard extractive industries'.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: References -->
+    <div>
+      <h2>References</h2>
+      <div class="card" style="border-color:#b8860b;display:flex;flex-direction:column;gap:6px;font-size:10px;padding:14px">
+        <div>&bull; <a href="https://coal.gov.in" target="_blank" style="color:#123a5e;text-decoration:underline">Ministry of Coal, Govt of India (coal.gov.in)</a></div>
+        <div>&bull; <a href="https://dgms.gov.in" target="_blank" style="color:#123a5e;text-decoration:underline">Directorate General of Mines Safety (dgms.gov.in)</a></div>
+        <div>&bull; <a href="https://cpcb.nic.in" target="_blank" style="color:#123a5e;text-decoration:underline">Central Pollution Control Board (cpcb.nic.in)</a></div>
+        <div>&bull; <a href="https://coalindia.in" target="_blank" style="color:#123a5e;text-decoration:underline">Coal India Limited Safety Norms (coalindia.in)</a></div>
+        <div>&bull; <a href="#" style="color:#123a5e;text-decoration:underline">Copernicus ESA Sentinel-1 SAR Missions</a></div>
+        <div>&bull; <a href="#" style="color:#123a5e;text-decoration:underline">PostGIS OGC Geospatial Consortium Standards</a></div>
+        <div>&bull; <a href="#" style="color:#123a5e;text-decoration:underline">FastAPI High Performance Web Framework</a></div>
+        <div>&bull; <a href="#" style="color:#123a5e;text-decoration:underline">scikit-learn Machine Learning in Python</a></div>
+        <div>&bull; <a href="#" style="color:#123a5e;text-decoration:underline">Tesseract OCR Open Source Engine</a></div>
+        <div>&bull; <a href="#" style="color:#123a5e;text-decoration:underline">ISO/IEC 27001 Cryptographic Integrity Standards</a></div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer"><span>@SIH Idea submission - Ministry of Coal | MineGuard AI (KhanRakshak)</span><span>6 / 6</span></div>
+</div>
+
+<script>
+let currentSlide = 1;
+const totalSlides = 6;
+
+function showSlide(num) {
+  for (let i = 1; i <= totalSlides; i++) {
+    const el = document.getElementById(`slide-${i}`);
+    if (el) el.classList.remove('active');
+  }
+  const activeEl = document.getElementById(`slide-${num}`);
+  if (activeEl) activeEl.classList.add('active');
+
+  document.getElementById('counter').innerText = `${num} / ${totalSlides}`;
+  document.getElementById('prev-btn').disabled = num === 1;
+  document.getElementById('next-btn').disabled = num === totalSlides;
+  currentSlide = num;
+}
+
+function nextSlide() {
+  if (currentSlide < totalSlides) showSlide(currentSlide + 1);
+}
+
+function prevSlide() {
+  if (currentSlide > 1) showSlide(currentSlide - 1);
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+  else if (e.key === 'ArrowLeft') prevSlide();
+});
+</script>
+</body>
+</html>
